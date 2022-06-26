@@ -45,7 +45,7 @@ namespace APBD.Server
 
             services.AddControllersWithViews();
             services.AddRazorPages();
-            services.AddScoped<IPolyglon, Polygon>();
+            services.AddScoped<IPolyglonService, PolyglonService>();
             services.AddScoped<ICompanyDetailsService, CompanyDetailsService>();
         }
 

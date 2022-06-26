@@ -4,23 +4,52 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using APBD.Server.Services.Interfaces;
 using APBD.Shared;
+using Microsoft.Extensions.Configuration;
 
 namespace APBD.Server.Services
 {
-    public class Polygon : IPolyglon
+    public class PolyglonService : IPolyglonService
     {
-
-        private readonly string AccessKey = "BGECFGGCsrXSWU1QyALI_xWsV2vDlO4h";
+        private readonly string AccessKey = string.Empty;
         private readonly string Url1 = " https://api.polygon.io/v3/reference/tickers/";
         private readonly string Url2 = "  https://api.polygon.io/v2/aggs/ticker/";
 
         private HttpClient _httpClient;
 
-        public Polygon(HttpClient httpClient)
+        public PolyglonService(HttpClient httpClient, IConfiguration configuration)
         {
             _httpClient = httpClient;
+            AccessKey = configuration.GetSection("ConnectionStrings").GetSection("Polygon").Value;
         }
 
+        private string SearchCompanyBySymbolUrl(string symbol)
+
+        {
+
+            return Url1 + "?search=" + symbol + "&active=true&sort=ticker&order=asc&limit=10&apiKey=" + AccessKey;
+        }
+
+        private string GetCompanyBySymbolUrl(string symbol)
+        {
+
+            return Url1 + symbol + "?apiKey=" + AccessKey;
+        }
+
+        private string GetStocksInformationUrlForDay(string symbol, DateTime startDate, DateTime endDate)
+        {
+
+            return Url2 + symbol + "/range/1/minute/" + startDate.ToString("yyyy-MM-dd") + "/" + endDate.ToString("yyyy-MM-dd") + "?adjusted=true&sort=asc&apiKey=" + AccessKey;
+        }
+
+        private string GetStocksInformationUrlFor7Days(string symbol, DateTime startDate, DateTime endDate)
+        {
+            return Url2 + symbol + "/range/1/hour/" + startDate.AddDays(-7).ToString("yyyy-MM-dd") + "/" + endDate.ToString("yyyy-MM-dd") + "?adjusted=true&sort=asc&apiKey=" + AccessKey;
+        }
+
+        private string GetStocksInformationUrlForThreeMonths(string symbol, DateTime startDate, DateTime endDate)
+        {
+            return Url2 + symbol + "/range/1/day/" + startDate.AddDays(-90).ToString("yyyy-MM-dd") + "/" + endDate.ToString("yyyy-MM-dd") + "?adjusted=true&sort=asc&apiKey=" + AccessKey;
+        }
 
         public async Task<DashboardSetchList> SearchCompanyBySymbol(string symbol)
         {
@@ -33,7 +62,7 @@ namespace APBD.Server.Services
             }
             catch (Exception)
             {
-                return new DashboardSetchList();
+                return null;
             }
 
         }
@@ -51,23 +80,12 @@ namespace APBD.Server.Services
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
-                return new DashboardTickerResult();
+                return null;
             }
 
         }
 
-        private string SearchCompanyBySymbolUrl(string symbol)
 
-        {
-
-            return Url1 + "?search=" + symbol + "&active=true&sort=ticker&order=asc&limit=10&apiKey=" + AccessKey;
-        }
-
-        private string GetCompanyBySymbolUrl(string symbol)
-        {
-
-            return Url1 + symbol + "?apiKey=" + AccessKey;
-        }
 
         public async Task<StockDateInformationForDashboardDTO> GetStocksInformation(string ticker)
         {
@@ -108,26 +126,9 @@ namespace APBD.Server.Services
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
-                return new StockDateInformationForDashboardDTO();
+                return null;
             }
         }
-
-        private string GetStocksInformationUrlForDay(string symbol, DateTime startDate, DateTime endDate)
-        {
-
-            return Url2 + symbol + "/range/1/minute/" + startDate.ToString("yyyy-MM-dd") + "/" + endDate.ToString("yyyy-MM-dd") + "?adjusted=true&sort=asc&apiKey=" + AccessKey;
-        }
-
-        private string GetStocksInformationUrlFor7Days(string symbol, DateTime startDate, DateTime endDate)
-        {
-            return Url2 + symbol + "/range/1/hour/" + startDate.AddDays(-7).ToString("yyyy-MM-dd") + "/" + endDate.ToString("yyyy-MM-dd") + "?adjusted=true&sort=asc&apiKey=" + AccessKey;
-        }
-
-        private string GetStocksInformationUrlForThreeMonths(string symbol, DateTime startDate, DateTime endDate)
-        {
-            return Url2 + symbol + "/range/1/day/" + startDate.AddDays(-90).ToString("yyyy-MM-dd") + "/" + endDate.ToString("yyyy-MM-dd") + "?adjusted=true&sort=asc&apiKey=" + AccessKey;
-        }
-
     }
 }
 

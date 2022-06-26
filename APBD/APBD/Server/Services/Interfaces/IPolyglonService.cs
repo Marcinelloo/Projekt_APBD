@@ -4,7 +4,7 @@ using APBD.Shared;
 
 namespace APBD.Server.Services.Interfaces
 {
-    public interface IPolyglon
+    public interface IPolyglonService
     {
 
         public Task<DashboardSetchList> SearchCompanyBySymbol(string symbol);

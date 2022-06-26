@@ -1,0 +1,211 @@
+﻿@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using APBD.Shared
+@attribute [Authorize]
+@inject HttpClient Http
+@inject NavigationManager navigator
+@using Syncfusion.Blazor
+@using Syncfusion.Blazor.Charts
+
+<div class="wrapper">
+    <h1>Dashborad</h1>
+
+    <div class="search__wrapper">
+        <input class="middle__width form-control" @bind="SearchWord" @bind:event="oninput" @onkeyup="() => SearchTickersByString(SearchWord)" placeholder="Enter ticker" />
+        <button class="btn btn-primary" @onclick="() => FindCompanyByTicker(SearchWord)">Search</button>
+        <button class="btn btn-warning" @onclick="() => GoToWatchList()">WatchList</button>
+    </div>
+
+    <div class="dropdown__menu">
+        @if (SearchOptions != null)
+        {
+            @foreach (var item in SearchOptions.Where(search => search.ToUpper().Contains(SearchWord.ToUpper()) && SearchWord.ToUpper() != search.ToUpper()))
+            {
+
+                <section @onclick="() => SearchWord = item">@item</section>
+            }
+
+        }
+    </div>
+    @if (tickerDetails != null && Loading == false)
+    {
+        <div class="company_infor__wrapper">
+
+            <div>
+                <img src='@tickerDetails.branding.icon_url?apiKey=BGECFGGCsrXSWU1QyALI_xWsV2vDlO4h' width="100" height="50" />
+            </div>
+            <div>
+                <h3>@tickerDetails.name</h3>
+                <div class="flex">
+                    <h4>Country: <span> @tickerDetails.locale</span></h4>
+                    <h4>People: <span>@tickerDetails.total_employees</span></h4>
+                </div>
+                <div class="flex">
+                    <h4> Profesion: <span>@tickerDetails.sic_description</span></h4>
+                    <h4> Number: <span>@tickerDetails.phone_number</span></h4>
+                </div>
+            </div>
+            <div>
+                @if (IsWatchedComapny)
+                {
+                    <button class="circle btn btn-success">+</button>
+                }
+                else
+                {
+                    <button class="circle btn btn-warning" @onclick="() => AddCompanyToList(dashboardInfo)">+</button>
+                }
+            </div>
+        </div>
+        <div style="display: flex; gap: 40px;">
+            <button class="btn btn-secondary" @onclick="() => ChangeCharData(stocks.day)">Last stock day</button>
+            <button class="btn btn-secondary" @onclick="() => ChangeCharData(stocks.sevenDaysStock)">Last 7 days</button>
+            <button class="btn btn-secondary" @onclick="() => ChangeCharData(stocks.threeMonths)">Last 3 months</button>
+        </div>
+
+
+        <SfChart Title="@tickerDetails.ticker">
+            <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Category" />
+            <ChartTooltipSettings Enable="true"></ChartTooltipSettings>
+            <ChartSeriesCollection>
+                <ChartSeries DataSource="@StockDetails" XName="date" High="h" Low="l" Open="o" Close="c" Type="ChartSeriesType.HiloOpenClose">
+                </ChartSeries>
+            </ChartSeriesCollection>
+        </SfChart>
+
+    }
+    else if (Loading == true)
+    {
+        <div class="loading__container">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden"></span>
+            </div>
+            <div>
+                Loading...
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private string SearchWord { get; set; } = String.Empty;
+    private List<string> SearchOptions { get; set; }
+    private DashboardSetchList response;
+    private DashboardTicker tickerDetails;
+    private StockDateInformationForDashboardDTO stocks;
+    private List<StockDataToShowInChart> StockDetails { get; set; } = new List<StockDataToShowInChart>();
+    private DashboardTrickerDTO dashboardInfo;
+    private bool Loading { get; set; }
+    private bool IsWatchedComapny { get; set; } = false;
+    private string Message { get; set; } = String.Empty;
+
+
+    protected async Task SearchTickersByString(string ticker)
+    {
+        if (ticker != "")
+        {
+            try
+            {
+                if (ticker.Length > 0)
+                {
+
+                    response = await Http.GetFromJsonAsync<DashboardSetchList>("Polyglon/symbol/" + ticker);
+                    SearchOptions = response.results.Select(f => f.ticker).Distinct().Take(5).ToList();
+
+                }
+            }
+            catch (AccessTokenNotAvailableException exception)
+            {
+                exception.Redirect();
+            }
+            catch (Exception e)
+            {
+                try
+                {
+                    response = await Http.GetFromJsonAsync<DashboardSetchList>("CompanyDetails/companies/" + ticker);
+                    SearchOptions = response.results.Select(f => f.ticker).Distinct().ToList();
+                }
+                catch (Exception)
+                {
+                    SearchOptions = null;
+                }
+            }
+        }
+    }
+
+    protected async Task FindCompanyByTicker(string ticker)
+    {
+
+        if (ticker != "")
+        {
+            Loading = true;
+            try
+            {
+
+                dashboardInfo = await Http.GetFromJsonAsync<DashboardTrickerDTO>("Polyglon/ticker/" + ticker);
+                tickerDetails = dashboardInfo.CompanyDetailsInformation.results;
+                stocks = dashboardInfo.CompanyStockInformaion;
+                ChangeCharData(stocks.day);
+            }
+
+            catch (AccessTokenNotAvailableException exception)
+            {
+                exception.Redirect();
+            }
+            catch (Exception)
+            {
+                try
+                {
+                    var response = await Http.GetFromJsonAsync<DashboardTrickerDTO>
+                        ("CompanyDetails/ticker/" + ticker);
+                    tickerDetails = response.CompanyDetailsInformation.results;
+                    stocks = response.CompanyStockInformaion;
+                    ChangeCharData(stocks.day);
+                }
+                catch
+                {
+
+                }
+            }
+
+            Loading = false;
+        }
+
+    }
+
+    protected async Task AddCompanyToList(DashboardTrickerDTO dashboardInfo)
+    {
+        try
+        {
+
+            await Http.PostAsJsonAsync("CompanyDetails/add", dashboardInfo);
+            IsWatchedComapny = true;
+        }
+        catch
+        {
+
+        }
+    }
+
+    private void ChangeCharData(List<StockDateInformation> data)
+    {
+        var result = new List<StockDataToShowInChart>();
+        data.ForEach(e =>
+        {
+            result.Add(new StockDataToShowInChart()
+            {
+                c = e.c,
+                date = new DateTime(e.t),
+                l = e.l,
+                o = e.o,
+                h = e.h,
+            });
+        });
+        StockDetails = result;
+    }
+
+    private void GoToWatchList()
+    {
+        navigator.NavigateTo("/watchlist");
+    }
+}
+

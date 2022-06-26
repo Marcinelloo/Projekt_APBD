@@ -7,10 +7,4 @@
   <ItemGroup>
     <SupportedPlatform Include="browser" />
   </ItemGroup>
-  <ItemGroup>
-    <None Remove="Models\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Models\" />
-  </ItemGroup>
 </Project>

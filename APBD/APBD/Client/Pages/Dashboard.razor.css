@@ -1,0 +1,56 @@
+﻿h1, h3, span {
+    color: #0269A4;
+}
+
+.search__wrapper {
+    display: flex;
+    gap: 20px
+}
+
+.middle__width {
+    max-width: 400px;
+}
+
+.dropdown__menu {
+    width: 200px;
+    border-radius: 0 0 10px 10px;
+    background-color: #C0C0C0;
+}
+
+section {
+    padding-left: 10px;
+}
+
+
+div section:hover {
+    background-color: lightgrey;
+}
+
+.company_infor__wrapper {
+    margin-top: 50px;
+    display: flex;
+    gap: 20px;
+}
+
+    .company_infor__wrapper img {
+        width: 50px;
+        aspect-ratio: 1/1;
+        border-radius: 20px;
+        margin-top: 20px;
+    }
+
+.flex {
+    display: flex;
+    gap: 20px;
+}
+
+.circle {
+    border-radius: 50%;
+}
+
+.loading__container {
+    display: flex;
+    margin: 20px;
+    gap: 20px;
+    align-items: center;
+}
