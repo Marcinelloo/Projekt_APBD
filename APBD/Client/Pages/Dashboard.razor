@@ -11,7 +11,8 @@
     <h1>Dashborad</h1>
 
     <div class="search__wrapper">
-        <input class="middle__width form-control" @bind="SearchWord" @bind:event="oninput" @onkeyup="() => SearchTickersByString(SearchWord)" placeholder="Enter ticker" />
+        <input class="middle__width form-control" @bind="SearchWord" @bind:event="oninput"
+            @onkeyup="() => SearchTickersByString(SearchWord)" placeholder="Enter ticker" />
         <button class="btn btn-primary" @onclick="() => FindCompanyByTicker(SearchWord)">Search</button>
         <button class="btn btn-warning" @onclick="() => GoToWatchList()">WatchList</button>
     </div>
@@ -19,7 +20,8 @@
     <div class="dropdown__menu">
         @if (SearchOptions != null)
         {
-            @foreach (var item in SearchOptions.Where(search => search.ToUpper().Contains(SearchWord.ToUpper()) && SearchWord.ToUpper() != search.ToUpper()))
+            @foreach (var item in SearchOptions.Where(search => search.ToUpper().Contains(SearchWord.ToUpper()) &&
+           SearchWord.ToUpper() != search.ToUpper()))
             {
 
                 <section @onclick="() => SearchWord = item">@item</section>
@@ -32,7 +34,8 @@
         <div class="company_infor__wrapper">
 
             <div>
-                <img src='@tickerDetails.branding.icon_url?apiKey=BGECFGGCsrXSWU1QyALI_xWsV2vDlO4h' width="100" height="50" />
+                <img src='@tickerDetails.branding.icon_url?apiKey=BGECFGGCsrXSWU1QyALI_xWsV2vDlO4h' width="100"
+                height="50" />
             </div>
             <div>
                 <h3>@tickerDetails.name</h3>
@@ -67,7 +70,8 @@
             <ChartPrimaryXAxis ValueType="Syncfusion.Blazor.Charts.ValueType.Category" />
             <ChartTooltipSettings Enable="true"></ChartTooltipSettings>
             <ChartSeriesCollection>
-                <ChartSeries DataSource="@StockDetails" XName="date" High="h" Low="l" Open="o" Close="c" Type="ChartSeriesType.HiloOpenClose">
+                <ChartSeries DataSource="@StockDetails" XName="date" High="h" Low="l" Open="o" Close="c"
+                Type="ChartSeriesType.HiloOpenClose">
                 </ChartSeries>
             </ChartSeriesCollection>
         </SfChart>
@@ -108,7 +112,7 @@
                 if (ticker.Length > 0)
                 {
 
-                    response = await Http.GetFromJsonAsync<DashboardSetchList>("Polyglon/symbol/" + ticker);
+                    response = await Http.GetFromJsonAsync<DashboardSetchList>("Polyglon/symbol/" + (ticker.ToUpper()));
                     SearchOptions = response.results.Select(f => f.ticker).Distinct().Take(5).ToList();
 
                 }
@@ -121,7 +125,7 @@
             {
                 try
                 {
-                    response = await Http.GetFromJsonAsync<DashboardSetchList>("CompanyDetails/companies/" + ticker);
+                    response = await Http.GetFromJsonAsync<DashboardSetchList>("CompanyDetails/companies/" + (ticker.ToUpper()));
                     SearchOptions = response.results.Select(f => f.ticker).Distinct().ToList();
                 }
                 catch (Exception)
@@ -141,7 +145,7 @@
             try
             {
 
-                dashboardInfo = await Http.GetFromJsonAsync<DashboardTrickerDTO>("Polyglon/ticker/" + ticker);
+                dashboardInfo = await Http.GetFromJsonAsync<DashboardTrickerDTO>("Polyglon/ticker/" + (ticker.ToUpper()));
                 tickerDetails = dashboardInfo.CompanyDetailsInformation.results;
                 stocks = dashboardInfo.CompanyStockInformaion;
                 ChangeCharData(stocks.day);
@@ -156,7 +160,7 @@
                 try
                 {
                     var response = await Http.GetFromJsonAsync<DashboardTrickerDTO>
-                        ("CompanyDetails/ticker/" + ticker);
+                    ("CompanyDetails/ticker/" + (ticker.ToUpper()));
                     tickerDetails = response.CompanyDetailsInformation.results;
                     stocks = response.CompanyStockInformaion;
                     ChangeCharData(stocks.day);
@@ -208,4 +212,3 @@
         navigator.NavigateTo("/watchlist");
     }
 }
-
