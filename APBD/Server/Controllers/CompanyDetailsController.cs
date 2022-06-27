@@ -28,9 +28,8 @@ namespace APBD.Server.Controllers
         }
 
         [HttpPost("add")]
-        public async Task<ActionResult> AddComapnyToWatchList(DashboardTrickerDTO company)
+        public async Task<ActionResult> AddComapnyToWatchList([FromBody] DashboardTrickerDTO company)
         {
-
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var result = await _service.AddCompanyToWatchList(company, userId);
@@ -58,7 +57,6 @@ namespace APBD.Server.Controllers
         [HttpGet]
         public async Task<ActionResult<DashboardTickerList>> GetAllUserWatchedCompany()
         {
-
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             var result = await _service.GetWatchedCompany(userId);
@@ -72,6 +70,7 @@ namespace APBD.Server.Controllers
         [HttpGet("companies/{symbol}")]
         public async Task<ActionResult<DashboardSetchList>> SearchCompanyBySymbol(string symbol)
         {
+
 
             var result = await _service.SearchCompanyBySymbol(symbol);
 

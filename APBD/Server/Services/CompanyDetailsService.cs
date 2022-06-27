@@ -28,6 +28,7 @@ namespace APBD.Server.Services
             {
                 var companyFromDatabase = await _applicationDbContext.Companies.Where(e => e.ticker == company.CompanyDetailsInformation.results.ticker).FirstOrDefaultAsync();
 
+
                 var lastDay = JsonConvert.SerializeObject(company.CompanyStockInformaion.day);
                 var sevenDays = JsonConvert.SerializeObject(company.CompanyStockInformaion.sevenDaysStock);
                 var threeMonths = JsonConvert.SerializeObject(company.CompanyStockInformaion.threeMonths);

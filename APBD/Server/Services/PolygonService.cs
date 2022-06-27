@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -113,13 +114,21 @@ namespace APBD.Server.Services
                 }
 
 
-                using var responseStreamDay = await _httpClient.GetStreamAsync(GetStocksInformationUrlForThreeMonths(ticker, startDate, endDate));
-                using var responseStream90Days = await _httpClient.GetStreamAsync(GetStocksInformationUrlForDay(ticker, startDate, endDate));
-                using var responseStream7Days = await _httpClient.GetStreamAsync(GetStocksInformationUrlFor7Days(ticker, startDate, endDate));
+                var responseStreamDay = await _httpClient.GetStreamAsync(GetStocksInformationUrlForThreeMonths(ticker, startDate, endDate));
+                var responseStream90Days = await _httpClient.GetStreamAsync(GetStocksInformationUrlForDay(ticker, startDate, endDate));
+                var responseStream7Days = await _httpClient.GetStreamAsync(GetStocksInformationUrlFor7Days(ticker, startDate, endDate));
+
+
 
                 var dayStock = await JsonSerializer.DeserializeAsync<StockDateInformationDTO>(responseStreamDay);
                 var sevenDaysStock = await JsonSerializer.DeserializeAsync<StockDateInformationDTO>(responseStream7Days);
                 var threeMonthsStock = await JsonSerializer.DeserializeAsync<StockDateInformationDTO>(responseStream90Days);
+
+
+                if (dayStock.results is null || sevenDaysStock.results is null || threeMonthsStock.results is null)
+                    return null;
+
+
 
                 return new StockDateInformationForDashboardDTO() { ticker = dayStock.ticker, threeMonths = threeMonthsStock.results, day = dayStock.results, sevenDaysStock = sevenDaysStock.results };
             }
